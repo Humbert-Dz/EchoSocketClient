@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 
 /**
  *
@@ -9,11 +5,23 @@
  */
 public class Interfaz extends javax.swing.JFrame {
 
+    // atributo (objeto de EchoSocketClient para poder enviar y recibir mensajes)
+    EchoSocketClient socketCliente;
+
     /**
      * Creates new form Interfaz
      */
     public Interfaz() {
         initComponents();
+
+        //inicializa atributo (objeto de EchoSocketClient para poder enviar y recibir mensajes)
+        this.socketCliente = new EchoSocketClient();
+
+        //envia al contenedor de mensajes un primer mensaje
+        adjuntarMensajeContenedor("Iniciando...");
+        //y la primer respuesta del servidor (ya que es el, el primero en enviar un mensaje)
+        adjuntarMensajeContenedor(this.socketCliente.recibirMensaje());
+
     }
 
     /**
@@ -25,21 +33,109 @@ public class Interfaz extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        mensajeInput = new javax.swing.JTextField();
+        jBtnEnviar = new javax.swing.JButton();
+        jLbl2 = new javax.swing.JLabel();
+        labelWarning = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        contenedorMensajes = new javax.swing.JTextArea();
+        btnClose = new javax.swing.JButton();
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 854, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 475, Short.MAX_VALUE)
-        );
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setTitle("Cliente echo");
+        setMinimumSize(new java.awt.Dimension(800, 650));
+        setPreferredSize(new java.awt.Dimension(800, 650));
+        setResizable(false);
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+        mensajeInput.setHorizontalAlignment(javax.swing.JTextField.LEFT);
+        mensajeInput.setToolTipText("Escribe algo...");
+        getContentPane().add(mensajeInput, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 520, 580, 30));
+
+        jBtnEnviar.setBackground(new java.awt.Color(204, 255, 255));
+        jBtnEnviar.setText("Enviar");
+        jBtnEnviar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jBtnEnviarMouseClicked(evt);
+            }
+        });
+        getContentPane().add(jBtnEnviar, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 520, 80, 30));
+
+        jLbl2.setText("Ingresa un mensaje...");
+        getContentPane().add(jLbl2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 500, 580, -1));
+        getContentPane().add(labelWarning, new org.netbeans.lib.awtextra.AbsoluteConstraints(43, 460, 690, 20));
+
+        contenedorMensajes.setColumns(20);
+        contenedorMensajes.setLineWrap(true);
+        contenedorMensajes.setRows(5);
+        contenedorMensajes.setFocusable(false);
+        jScrollPane2.setViewportView(contenedorMensajes);
+
+        getContentPane().add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 20, 580, 410));
+
+        btnClose.setBackground(new java.awt.Color(255, 204, 204));
+        btnClose.setText("Cerrar");
+        btnClose.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btnCloseMouseClicked(evt);
+            }
+        });
+        getContentPane().add(btnClose, new org.netbeans.lib.awtextra.AbsoluteConstraints(660, 560, 80, 30));
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
+
+    /**
+     * Método para adjuntar mensajes en el contenedor de mensajes
+     *
+     * @param mensaje a adjuntar
+     */
+    public void adjuntarMensajeContenedor(String mensaje) {
+        //adjunta el mensaje en el contenedor
+        this.contenedorMensajes.append(mensaje + "\n");
+
+        //imprime en consola el mensaje (extra)
+        System.out.println(mensaje);
+    }
+
+    /**
+     * Evento click en el boton enviar
+     *
+     * @param evt evento
+     */
+    private void jBtnEnviarMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jBtnEnviarMouseClicked
+        // recuperando el mensaje del input
+        String mensaje = this.mensajeInput.getText();
+
+        //volver a vaciar el input
+        this.mensajeInput.setText("");
+
+        //evalua si se intenta enviar espacios en blanco o una cadena vacía
+        if (mensaje.isBlank()) {
+            this.labelWarning.setText("No es posible enviar cadenas vacías o con espacios en blanco, intenta de nuevo.");
+        } else {
+            //enviando el mensaje al servidor por el fujo de salida y recibiendo la respuesta
+            String respuestaServidor = this.socketCliente.enviarMensaje(mensaje);
+
+            //agregando el mensaje y la respuesta al contenedor de mensajes
+            adjuntarMensajeContenedor("Tu: " + mensaje);
+            adjuntarMensajeContenedor("Servidor: " + respuestaServidor);
+
+            //indicacion de mensaje enviado a la etiqueta de avisos
+            this.labelWarning.setText("Mensaje enviado!");
+        }
+    }//GEN-LAST:event_jBtnEnviarMouseClicked
+
+    /**
+     * Evento click en el boton de salir
+     *
+     * @param evt
+     */
+    private void btnCloseMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnCloseMouseClicked
+        // sale de la ejecucion del programa
+        System.exit(0);
+    }//GEN-LAST:event_btnCloseMouseClicked
 
     /**
      * @param args the command line arguments
@@ -77,5 +173,12 @@ public class Interfaz extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnClose;
+    private javax.swing.JTextArea contenedorMensajes;
+    private javax.swing.JButton jBtnEnviar;
+    private javax.swing.JLabel jLbl2;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel labelWarning;
+    private javax.swing.JTextField mensajeInput;
     // End of variables declaration//GEN-END:variables
 }
